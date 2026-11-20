@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TicketFlow | Role-Based Customer Support Ticket Management</title>
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#f0fdf4',
+              100: '#dcfce7',
+              500: '#22c55e',
+              600: '#16a34a',
+              700: '#15803d',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .badge-open { background-color: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+    .badge-progress { background-color: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+    .badge-resolved { background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+
+    .priority-Urgent { color: #dc2626; font-weight: 700; }
+    .priority-High { color: #ea580c; font-weight: 600; }
+    .priority-Medium { color: #4f46e5; font-weight: 500; }
+    .priority-Low { color: #64748b; font-weight: 500; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+  <!-- TOP HEADER -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        
+        <!-- Brand & Title -->
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white font-bold text-xl shadow-md shadow-indigo-100">
+            TF
+          </div>
+          <div>
+            <div class="flex items-center space-x-2">
+              <span class="text-xl font-extrabold tracking-tight text-slate-900">TicketFlow</span>
+              <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">v1.0 MERN</span>
+            </div>
+            <p class="text-xs text-slate-500 hidden sm:block">Role-Based Support Ticket Management System</p>
+          </div>
+        </div>
+
+        <!-- Quick Switch Demo Account Header -->
+        <div class="flex items-center space-x-2 sm:space-x-4">
+          <div class="text-right hidden md:block">
+            <div class="text-xs text-slate-400">Current Session:</div>
+            <div id="currentUserLabel" class="text-sm font-bold text-slate-700">Loading...</div>
+          </div>
+
+          <!-- Role switcher pills -->
+          <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
+            <button onclick="switchRole('customer')" id="btnRoleCustomer" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all shadow-sm bg-white text-indigo-600">
+              Customer
+            </button>
+            <button onclick="switchRole('agent')" id="btnRoleAgent" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all text-slate-600 hover:text-slate-900">
+              Agent
+            </button>
+            <button onclick="switchRole('admin')" id="btnRoleAdmin" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all text-slate-600 hover:text-slate-900">
+              Admin
+            </button>
+          </div>
+
+          <!-- Auth Button -->
+          <button onclick="openAuthModal()" class="p-2 text-slate-500 hover:text-indigo-600 hover:bg-slate-50 rounded-lg text-xs font-medium border border-slate-200" title="Custom Account Login">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- ROLE BANNER & NAVIGATION -->
+  <div class="bg-indigo-900 text-white shadow-inner">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center space-x-3">
+        <span id="roleIndicatorBadge" class="px-2.5 py-1 rounded-md text-xs font-extrabold uppercase tracking-wider bg-indigo-700 text-indigo-100">
+          Customer Portal
+        </span>
+        <span id="roleDescription" class="text-xs text-indigo-200">
+          Create support requests and track resolution status in real-time.
+        </span>
+      </div>
+
+      <div class="flex items-center space-x-2">
+        <button id="btnNewTicket" onclick="openNewTicketModal()" class="inline-flex items-center px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold transition shadow-sm">
+          <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+          Raise New Ticket
+        </button>
+        <button onclick="loadAllData()" class="inline-flex items-center px-3 py-1.5 rounded-lg bg-indigo-800 hover:bg-indigo-700 text-indigo-100 text-xs font-medium transition">
+          <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+          Refresh
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN CONTAINER -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full space-y-6">
+
+    <!-- ADMIN ANALYTICS DASHBOARD (Visible to Admin role) -->
+    <section id="adminAnalyticsSection" class="hidden space-y-4">
+      <div class="flex items-center justify-between">
+        <h2 class="text-base font-bold text-slate-800 flex items-center">
+          <svg class="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+          Executive Performance Dashboard (Admin KPI Analytics)
+        </h2>
+        <span class="text-xs text-slate-500 font-mono" id="statsTimestamp">Live aggregation</span>
+      </div>
+
+      <!-- KPI Cards -->
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Tickets</div>
+          <div id="statTotal" class="text-2xl font-extrabold text-slate-900 mt-1">0</div>
+          <div class="text-[11px] text-slate-400 mt-0.5">Across all departments</div>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-amber-200 bg-amber-50/20 shadow-sm">
+          <div class="text-xs font-semibold text-amber-700 uppercase tracking-wider">Open Backlog</div>
+          <div id="statOpen" class="text-2xl font-extrabold text-amber-600 mt-1">0</div>
+          <div class="text-[11px] text-amber-600/70 mt-0.5">Awaiting agent work</div>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-blue-200 bg-blue-50/20 shadow-sm">
+          <div class="text-xs font-semibold text-blue-700 uppercase tracking-wider">In Progress</div>
+          <div id="statProgress" class="text-2xl font-extrabold text-blue-600 mt-1">0</div>
+          <div class="text-[11px] text-blue-600/70 mt-0.5">Actively being resolved</div>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-emerald-200 bg-emerald-50/20 shadow-sm">
+          <div class="text-xs font-semibold text-emerald-700 uppercase tracking-wider">Resolved</div>
+          <div id="statResolved" class="text-2xl font-extrabold text-emerald-600 mt-1">0</div>
+          <div id="statResolutionRate" class="text-[11px] text-emerald-600/70 mt-0.5">0% resolved rate</div>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-indigo-200 bg-indigo-50/20 shadow-sm col-span-2 md:col-span-1">
+          <div class="text-xs font-semibold text-indigo-700 uppercase tracking-wider">Avg Resolution Time</div>
+          <div id="statAvgTime" class="text-2xl font-extrabold text-indigo-600 mt-1">0m</div>
+          <div class="text-[11px] text-indigo-600/70 mt-0.5">T_avg = Σ(T_r - T_c) / N</div>
+        </div>
+      </div>
+
+      <!-- Breakdown Bars -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <div class="text-xs font-bold text-slate-700 mb-3 flex items-center justify-between">
+            <span>Tickets by Category</span>
+            <span class="text-[11px] font-normal text-slate-400">Distribution</span>
+          </div>
+          <div id="categoryBars" class="space-y-2">
+            <!-- Dynamic Category Bars -->
+          </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <div class="text-xs font-bold text-slate-700 mb-3 flex items-center justify-between">
+            <span>Tickets by Priority</span>
+            <span class="text-[11px] font-normal text-slate-400">Severity</span>
+          </div>
+          <div id="priorityBars" class="space-y-2">
+            <!-- Dynamic Priority Bars -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SEARCH & FILTER TOOLBAR -->
+    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        
+        <!-- Search Input -->
+        <div class="relative flex-1">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+          </div>
+          <input type="text" id="searchInput" placeholder="Search tickets by title or description..." oninput="handleFilterChange()" class="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+        </div>
+
+        <!-- Filter Dropdowns -->
+        <div class="flex items-center space-x-2">
+          <select id="filterStatus" onchange="handleFilterChange()" class="text-xs border border-slate-200 rounded-lg px-2.5 py-2 bg-slate-50 text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <option value="">All Statuses</option>
+            <option value="Open">Open</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Resolved">Resolved</option>
+          </select>
+
+          <select id="filterPriority" onchange="handleFilterChange()" class="text-xs border border-slate-200 rounded-lg px-2.5 py-2 bg-slate-50 text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <option value="">All Priorities</option>
+            <option value="Low">Low</option>
+            <option value="Medium">Medium</option>
+            <option value="High">High</option>
+            <option value="Urgent">Urgent</option>
+          </select>
+
+          <select id="filterCategory" onchange="handleFilterChange()" class="text-xs border border-slate-200 rounded-lg px-2.5 py-2 bg-slate-50 text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <option value="">All Categories</option>
+            <option value="Technical">Technical</option>
+            <option value="Billing">Billing</option>
+            <option value="Account">Account</option>
+            <option value="Hardware">Hardware</option>
+            <option value="General">General</option>
+          </select>
+
+          <button onclick="resetFilters()" class="text-xs text-slate-500 hover:text-slate-800 px-2 py-2 rounded-lg hover:bg-slate-100 transition" title="Clear Filters">
+            Reset
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Ticket Counter & Context Message -->
+      <div class="flex items-center justify-between text-xs text-slate-500 pt-1 border-t border-slate-100">
+        <div>Showing <span id="ticketCountBadge" class="font-bold text-slate-800">0</span> tickets in your queue</div>
+        <div id="queueScopeNotice" class="text-slate-400 font-medium">Customer View: Showing tickets created by you</div>
+      </div>
+    </div>
+
+    <!-- TICKET LIST GRID -->
+    <div id="ticketListContainer" class="space-y-3">
+      <!-- Tickets will be injected here dynamically -->
+      <div class="text-center py-12 text-slate-400 text-sm">Loading tickets...</div>
+    </div>
+
+  </main>
+
+  <!-- CREATE TICKET MODAL -->
+  <div id="modalNewTicket" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 space-y-4">
+      <div class="flex items-center justify-between border-b pb-3">
+        <h3 class="text-base font-bold text-slate-900 flex items-center">
+          <svg class="w-5 h-5 mr-2 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          Raise New Support Ticket
+        </h3>
+        <button onclick="closeNewTicketModal()" class="text-slate-400 hover:text-slate-600 text-sm font-bold">&times;</button>
+      </div>
+
+      <form onsubmit="submitNewTicket(event)" class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Issue Title *</label>
+          <input type="text" id="newTicketTitle" required placeholder="Brief description of the problem" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Category *</label>
+            <select id="newTicketCategory" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+              <option value="Technical">Technical</option>
+              <option value="Billing">Billing</option>
+              <option value="Account">Account</option>
+              <option value="Hardware">Hardware</option>
+              <option value="General" selected>General</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Priority Level *</label>
+            <select id="newTicketPriority" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+              <option value="Low">Low</option>
+              <option value="Medium" selected>Medium</option>
+              <option value="High">High</option>
+              <option value="Urgent">Urgent</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Detailed Description *</label>
+          <textarea id="newTicketDescription" rows="4" required placeholder="Provide step-by-step details, error codes, and symptoms..." class="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
+        </div>
+
+        <div id="newTicketError" class="hidden text-xs text-red-600 bg-red-50 p-2 rounded-lg border border-red-200"></div>
+
+        <div class="flex items-center justify-end space-x-2 pt-2">
+          <button type="button" onclick="closeNewTicketModal()" class="px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg">Cancel</button>
+          <button type="submit" id="btnSubmitTicket" class="px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow">Submit Ticket</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- TICKET DETAIL & COMMENTS MODAL -->
+  <div id="modalTicketDetail" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-100">
+      
+      <!-- Modal Header -->
+      <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 rounded-t-2xl">
+        <div class="space-y-1">
+          <div class="flex items-center space-x-2">
+            <span id="detailStatusBadge" class="px-2.5 py-0.5 rounded-full text-[11px] font-bold badge-open">Open</span>
+            <span id="detailCategoryBadge" class="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-700">General</span>
+            <span id="detailPriorityBadge" class="text-xs font-bold text-indigo-600">Medium</span>
+          </div>
+          <h3 id="detailTitle" class="text-base font-bold text-slate-900 leading-snug">Ticket Title</h3>
+        </div>
+        <button onclick="closeDetailModal()" class="text-slate-400 hover:text-slate-600 text-2xl font-bold">&times;</button>
+      </div>
+
+      <!-- Modal Body (Scrollable) -->
+      <div class="p-6 overflow-y-auto space-y-6 flex-1">
+        
+        <!-- Metadata Info Grid -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3 bg-slate-50 rounded-xl text-xs border border-slate-100">
+          <div>
+            <div class="text-slate-400 font-medium">Created By</div>
+            <div id="detailCreator" class="font-bold text-slate-800 mt-0.5">Alex Johnson</div>
+          </div>
+          <div>
+            <div class="text-slate-400 font-medium">Assigned To</div>
+            <div id="detailAssigned" class="font-bold text-slate-800 mt-0.5">Unassigned</div>
+          </div>
+          <div>
+            <div class="text-slate-400 font-medium">Created On</div>
+            <div id="detailCreatedDate" class="font-bold text-slate-800 mt-0.5">Just now</div>
+          </div>
+          <div>
+            <div class="text-slate-400 font-medium">Resolved At</div>
+            <div id="detailResolvedDate" class="font-bold text-emerald-600 mt-0.5">-</div>
+          </div>
+        </div>
+
+        <!-- Description Box -->
+        <div class="space-y-1">
+          <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Problem Description</div>
+          <div id="detailDescription" class="text-xs leading-relaxed text-slate-700 bg-white p-3 rounded-xl border border-slate-200">
+            Description body...
+          </div>
+        </div>
+
+        <!-- Role Action Controls (Assign for Admin / Status transitions for Agent) -->
+        <div id="detailRoleActions" class="p-3 bg-indigo-50/60 rounded-xl border border-indigo-100 space-y-3">
+          <div class="text-xs font-bold text-indigo-900 flex items-center justify-between">
+            <span>Operational Controls</span>
+            <span id="detailActionRoleTag" class="text-[10px] font-semibold bg-indigo-200 text-indigo-800 px-2 py-0.5 rounded">Admin Only</span>
+          </div>
+
+          <!-- Admin Assignment row -->
+          <div id="adminAssignControl" class="flex items-center space-x-2">
+            <label class="text-xs font-medium text-slate-700 whitespace-nowrap">Assign Agent:</label>
+            <select id="agentSelectDropdown" class="text-xs border border-slate-300 rounded-lg px-2.5 py-1.5 flex-1 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <option value="">Select an Agent...</option>
+            </select>
+            <button onclick="executeAssignAgent()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold shadow-sm transition">
+              Assign
+            </button>
+          </div>
+
+          <!-- Status Transition row (Agent & Admin) -->
+          <div id="statusTransitionControl" class="flex items-center space-x-2 pt-1 border-t border-indigo-100">
+            <span class="text-xs font-medium text-slate-700">Update Status:</span>
+            <button onclick="executeStatusUpdate('Open')" class="px-2.5 py-1 text-xs rounded border border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100">Open</button>
+            <button onclick="executeStatusUpdate('In Progress')" class="px-2.5 py-1 text-xs rounded border border-blue-300 bg-blue-50 text-blue-800 hover:bg-blue-100 font-semibold">In Progress</button>
+            <button onclick="executeStatusUpdate('Resolved')" class="px-2.5 py-1 text-xs rounded border border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 font-bold">Mark Resolved</button>
+          </div>
+        </div>
+
+        <!-- Comments & Audit History Thread -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center">
+              <svg class="w-4 h-4 mr-1 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+              Discussion & Audit Thread (<span id="commentCount">0</span>)
+            </h4>
+          </div>
+
+          <div id="commentThread" class="space-y-2 max-h-52 overflow-y-auto pr-1">
+            <!-- Dynamic Comments -->
+          </div>
+
+          <!-- Add Comment Form -->
+          <form onsubmit="submitComment(event)" class="flex items-center space-x-2 pt-2">
+            <input type="text" id="newCommentInput" required placeholder="Write a response or update..." class="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+            <button type="submit" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-bold shadow-sm transition">
+              Send
+            </button>
+          </form>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- AUTH / LOGIN MODAL -->
+  <div id="modalAuth" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-100 space-y-4">
+      <div class="flex items-center justify-between border-b pb-3">
+        <h3 class="text-base font-bold text-slate-900">Custom Account Login</h3>
+        <button onclick="closeAuthModal()" class="text-slate-400 hover:text-slate-600 text-sm font-bold">&times;</button>
+      </div>
+
+      <form onsubmit="handleCustomLogin(event)" class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Email</label>
+          <input type="email" id="authEmail" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Password</label>
+          <input type="password" id="authPassword" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+        </div>
+
+        <div id="authError" class="hidden text-xs text-red-600 bg-red-50 p-2 rounded-lg border border-red-200"></div>
+
+        <div class="pt-2">
+          <button type="submit" class="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-lg shadow">
+            Sign In
+          </button>
+        </div>
+      </form>
+
+      <div class="text-[11px] text-slate-400 text-center border-t pt-3">
+        Pre-configured seed demo accounts are available in the top bar.
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION POPUP -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 bg-slate-900 text-white text-xs px-4 py-2.5 rounded-xl shadow-lg border border-slate-700 transition-all opacity-0 pointer-events-none transform translate-y-2">
+    Notification
+  </div>
+
+  <!-- SCRIPT LOGIC -->
+  <script>
+    // Demo accounts definitions from report
+    const DEMO_USERS = {
+      customer: { email: 'customer@ticketflow.com', password: 'customer123', name: 'Alex Johnson', role: 'customer' },
+      agent: { email: 'agent@ticketflow.com', password: 'agent123', name: 'David Miller', role: 'agent' },
+      admin: { email: 'admin@ticketflow.com', password: 'admin123', name: 'Sarah Connor', role: 'admin' }
+    };
+
+    let currentUser = null;
+    let currentToken = localStorage.getItem('tf_token') || null;
+    let activeRole = 'customer';
+    let allTickets = [];
+    let currentActiveTicket = null;
+    let cachedAgents = [];
+
+    const API_BASE = window.location.origin.includes(':5173') ? 'http://localhost:5000' : '';
+
+    function showToast(message, isError = false) {
+      const toast = document.getElementById('toast');
+      toast.innerText = message;
+      toast.className = `fixed bottom-5 right-5 z-50 text-xs px-4 py-2.5 rounded-xl shadow-lg transition-all transform ${isError ? 'bg-red-600 text-white' : 'bg-slate-900 text-white'}`;
+      toast.style.opacity = '1';
+      toast.style.pointerEvents = 'auto';
+      toast.style.transform = 'translateY(0)';
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.pointerEvents = 'none';
+        toast.style.transform = 'translateY(8px)';
+      }, 3500);
+    }
+
+    async function apiRequest(endpoint, method = 'GET', body = null) {
+      const headers = { 'Content-Type': 'application/json' };
+      if (currentToken) {
+        headers['Authorization'] = `Bearer ${currentToken}`;
+      }
+      const res = await fetch(`${API_BASE}${endpoint}`, {
+        method,
+        headers,
+        body: body ? JSON.stringify(body) : null
+      });
+      return await res.json();
+    }
+
+    async function switchRole(roleKey) {
+      activeRole = roleKey;
+      const creds = DEMO_USERS[roleKey];
+      
+      // Update UI button tabs
+      ['customer', 'agent', 'admin'].forEach(r => {
+        const btn = document.getElementById(`btnRole${r.charAt(0).toUpperCase() + r.slice(1)}`);
+        if (r === roleKey) {
+          btn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all shadow-sm bg-white text-indigo-600';
+        } else {
+          btn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all text-slate-600 hover:text-slate-900';
+        }
+      });
+
+      // Login demo credentials
+      const res = await apiRequest('/api/auth/login', 'POST', { email: creds.email, password: creds.password });
+      if (res.success) {
+        currentToken = res.token;
+        currentUser = res.user;
+        localStorage.setItem('tf_token', res.token);
+        updateUserUI();
+        await loadAllData();
+        showToast(`Switched persona to ${creds.name} (${roleKey.toUpperCase()})`);
+      } else {
+        showToast('Login failed: ' + res.message, true);
+      }
+    }
+
+    function updateUserUI() {
+      if (!currentUser) return;
+      document.getElementById('currentUserLabel').innerText = `${currentUser.name} (${currentUser.role})`;
+      
+      const badge = document.getElementById('roleIndicatorBadge');
+      const desc = document.getElementById('roleDescription');
+      const newTicketBtn = document.getElementById('btnNewTicket');
+      const analyticsSec = document.getElementById('adminAnalyticsSection');
+      const queueNotice = document.getElementById('queueScopeNotice');
+
+      if (currentUser.role === 'customer') {
+        badge.innerText = 'Customer Portal';
+        badge.className = 'px-2.5 py-1 rounded-md text-xs font-extrabold uppercase tracking-wider bg-emerald-700 text-emerald-100';
+        desc.innerText = 'Create support requests, track resolution progress and comment.';
+        newTicketBtn.classList.remove('hidden');
+        analyticsSec.classList.add('hidden');
+        queueNotice.innerText = 'Showing tickets created by your account';
+      } else if (currentUser.role === 'agent') {
+        badge.innerText = 'Support Agent Workspace';
+        badge.className = 'px-2.5 py-1 rounded-md text-xs font-extrabold uppercase tracking-wider bg-blue-700 text-blue-100';
+        desc.innerText = 'View assigned tickets, update progress, reply to customers and resolve.';
+        newTicketBtn.classList.add('hidden');
+        analyticsSec.classList.add('hidden');
+        queueNotice.innerText = 'Showing tickets assigned specifically to you';
+      } else if (currentUser.role === 'admin') {
+        badge.innerText = 'Administrator Control Center';
+        badge.className = 'px-2.5 py-1 rounded-md text-xs font-extrabold uppercase tracking-wider bg-purple-700 text-purple-100';
+        desc.innerText = 'System overview: assign agents, inspect company-wide metrics and review all tickets.';
+        newTicketBtn.classList.add('hidden');
+        analyticsSec.classList.remove('hidden');
+        queueNotice.innerText = 'Showing all support tickets across the organization';
+      }
+    }
+
+    async function loadAllData() {
+      // Load tickets
+      const filterStatus = document.getElementById('filterStatus').value;
+      const filterPriority = document.getElementById('filterPriority').value;
+      const filterCategory = document.getElementById('filterCategory').value;
+      const search = document.getElementById('searchInput').value;
+
+      const params = new URLSearchParams();
+      if (filterStatus) params.append('status', filterStatus);
+      if (filterPriority) params.append('priority', filterPriority);
+      if (filterCategory) params.append('category', filterCategory);
+      if (search) params.append('search', search);
+
+      const res = await apiRequest(`/api/tickets?${params.toString()}`);
+      if (res.success) {
+        allTickets = res.tickets || [];
+        renderTickets(allTickets);
+      }
+
+      // If Admin, load stats & agents
+      if (currentUser && currentUser.role === 'admin') {
+        loadAnalytics();
+        loadAgentsList();
+      }
+    }
+
+    function renderTickets(tickets) {
+      const container = document.getElementById('ticketListContainer');
+      document.getElementById('ticketCountBadge').innerText = tickets.length;
+
+      if (!tickets || tickets.length === 0) {
+        container.innerHTML = `
+          <div class="bg-white rounded-xl border border-slate-200 p-12 text-center space-y-2">
+            <div class="text-slate-300 text-4xl font-light">📋</div>
+            <div class="text-sm font-bold text-slate-700">No tickets match your filters</div>
+            <div class="text-xs text-slate-400">Try adjusting your search criteria or create a new ticket.</div>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = tickets.map(t => {
+        const creatorName = t.createdBy ? (t.createdBy.name || 'Customer') : 'Unknown';
+        const assignedName = t.assignedTo ? (t.assignedTo.name || 'Assigned Agent') : 'Unassigned';
+        const dateStr = new Date(t.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+        let statusClass = 'badge-open';
+        if (t.status === 'In Progress') statusClass = 'badge-progress';
+        if (t.status === 'Resolved') statusClass = 'badge-resolved';
+
+        return `
+          <div onclick="openTicketDetail('${t._id}')" class="bg-white rounded-xl border border-slate-200 p-4 hover:border-indigo-300 hover:shadow-md transition cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="space-y-1.5 flex-1">
+              <div class="flex items-center space-x-2">
+                <span class="px-2 py-0.5 rounded text-[11px] font-bold ${statusClass}">${t.status}</span>
+                <span class="text-xs font-semibold text-slate-500">${t.category}</span>
+                <span class="text-xs priority-${t.priority}">● ${t.priority}</span>
+                <span class="text-[11px] text-slate-400 font-mono hidden md:inline">#${t._id.slice(-6)}</span>
+              </div>
+              <h4 class="text-sm font-bold text-slate-900">${t.title}</h4>
+              <p class="text-xs text-slate-500 line-clamp-1">${t.description}</p>
+            </div>
+
+            <div class="flex sm:flex-col items-center sm:items-end justify-between text-xs text-slate-500 pt-2 sm:pt-0 border-t sm:border-0 border-slate-100">
+              <div class="flex items-center space-x-1.5">
+                <span class="text-slate-400 text-[11px]">By:</span>
+                <span class="font-medium text-slate-700">${creatorName}</span>
+              </div>
+              <div class="flex items-center space-x-1.5 mt-0.5">
+                <span class="text-slate-400 text-[11px]">Assigned:</span>
+                <span class="font-semibold ${t.assignedTo ? 'text-indigo-600' : 'text-amber-600'}">${assignedName}</span>
+              </div>
+              <div class="text-[10px] text-slate-400 mt-1">${dateStr}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function loadAnalytics() {
+      const res = await apiRequest('/api/tickets/stats');
+      if (res.success && res.stats) {
+        const s = res.stats;
+        document.getElementById('statTotal').innerText = s.total;
+        document.getElementById('statOpen').innerText = s.open;
+        document.getElementById('statProgress').innerText = s.inProgress;
+        document.getElementById('statResolved').innerText = s.resolved;
+        document.getElementById('statResolutionRate').innerText = `${s.resolutionRatePercent}% resolution rate`;
+        document.getElementById('statAvgTime').innerText = s.averageResolutionFormatted || '0m';
+
+        // Render category bars
+        const catContainer = document.getElementById('categoryBars');
+        const maxCat = Math.max(...Object.values(s.byCategory), 1);
+        catContainer.innerHTML = Object.entries(s.byCategory).map(([cat, count]) => {
+          const pct = Math.round((count / maxCat) * 100);
+          return `
+            <div class="space-y-1">
+              <div class="flex justify-between text-[11px] font-medium text-slate-600">
+                <span>${cat}</span>
+                <span class="font-bold text-slate-800">${count}</span>
+              </div>
+              <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                <div class="bg-indigo-600 h-1.5 rounded-full" style="width: ${pct}%"></div>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        // Render priority bars
+        const prioContainer = document.getElementById('priorityBars');
+        const prioColors = { Urgent: 'bg-red-500', High: 'bg-orange-500', Medium: 'bg-indigo-500', Low: 'bg-slate-400' };
+        const maxPrio = Math.max(...Object.values(s.byPriority), 1);
+        prioContainer.innerHTML = Object.entries(s.byPriority).map(([prio, count]) => {
+          const pct = Math.round((count / maxPrio) * 100);
+          const color = prioColors[prio] || 'bg-indigo-500';
+          return `
+            <div class="space-y-1">
+              <div class="flex justify-between text-[11px] font-medium text-slate-600">
+                <span class="priority-${prio}">${prio}</span>
+                <span class="font-bold text-slate-800">${count}</span>
+              </div>
+              <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                <div class="${color} h-1.5 rounded-full" style="width: ${pct}%"></div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    async function loadAgentsList() {
+      const res = await apiRequest('/api/auth/agents');
+      if (res.success) {
+        cachedAgents = res.agents || [];
+        const dropdown = document.getElementById('agentSelectDropdown');
+        dropdown.innerHTML = '<option value="">Select an Agent...</option>' + cachedAgents.map(a => `
+          <option value="${a._id}">${a.name} (${a.email})</option>
+        `).join('');
+      }
+    }
+
+    async function openTicketDetail(ticketId) {
+      const res = await apiRequest(`/api/tickets/${ticketId}`);
+      if (!res.success) {
+        showToast(res.message || 'Cannot access ticket', true);
+        return;
+      }
+
+      currentActiveTicket = res.ticket;
+      const t = currentActiveTicket;
+
+      document.getElementById('detailTitle').innerText = t.title;
+      document.getElementById('detailDescription').innerText = t.description;
+      document.getElementById('detailCategoryBadge').innerText = t.category;
+      document.getElementById('detailPriorityBadge').innerText = t.priority;
+      document.getElementById('detailPriorityBadge').className = `text-xs priority-${t.priority}`;
+      
+      const statusBadge = document.getElementById('detailStatusBadge');
+      statusBadge.innerText = t.status;
+      statusBadge.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-bold ' + 
+        (t.status === 'Resolved' ? 'badge-resolved' : t.status === 'In Progress' ? 'badge-progress' : 'badge-open');
+
+      document.getElementById('detailCreator').innerText = t.createdBy ? t.createdBy.name : 'Unknown';
+      document.getElementById('detailAssigned').innerText = t.assignedTo ? t.assignedTo.name : 'Unassigned';
+      document.getElementById('detailCreatedDate').innerText = new Date(t.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+      document.getElementById('detailResolvedDate').innerText = t.resolvedAt ? new Date(t.resolvedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-';
+
+      // Configure Action Controls
+      const roleActionsBox = document.getElementById('detailRoleActions');
+      const adminAssignBox = document.getElementById('adminAssignControl');
+      const actionRoleTag = document.getElementById('detailActionRoleTag');
+
+      if (currentUser.role === 'admin') {
+        roleActionsBox.classList.remove('hidden');
+        adminAssignBox.classList.remove('hidden');
+        actionRoleTag.innerText = 'Admin Controls';
+        if (t.assignedTo) {
+          document.getElementById('agentSelectDropdown').value = t.assignedTo._id || t.assignedTo;
+        }
+      } else if (currentUser.role === 'agent') {
+        roleActionsBox.classList.remove('hidden');
+        adminAssignBox.classList.add('hidden');
+        actionRoleTag.innerText = 'Agent Controls';
+      } else {
+        roleActionsBox.classList.add('hidden');
+      }
+
+      // Load Comments
+      await loadComments(t._id);
+
+      document.getElementById('modalTicketDetail').classList.remove('hidden');
+    }
+
+    async function loadComments(ticketId) {
+      const res = await apiRequest(`/api/tickets/${ticketId}/comments`);
+      const container = document.getElementById('commentThread');
+      if (res.success && res.comments) {
+        document.getElementById('commentCount').innerText = res.comments.length;
+        if (res.comments.length === 0) {
+          container.innerHTML = '<div class="text-xs text-slate-400 py-4 text-center">No comments yet on this ticket.</div>';
+          return;
+        }
+        container.innerHTML = res.comments.map(c => {
+          const author = c.userId ? c.userId.name : 'User';
+          const role = c.userId ? c.userId.role : 'user';
+          const roleBadgeColor = role === 'admin' ? 'bg-purple-100 text-purple-700' : role === 'agent' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700';
+          const time = new Date(c.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          return `
+            <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-100 text-xs space-y-1">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-1.5">
+                  <span class="font-bold text-slate-800">${author}</span>
+                  <span class="px-1.5 py-0.2 rounded text-[10px] font-semibold ${roleBadgeColor}">${role}</span>
+                </div>
+                <span class="text-[10px] text-slate-400">${time}</span>
+              </div>
+              <div class="text-slate-600">${c.message}</div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    async function submitComment(e) {
+      e.preventDefault();
+      const input = document.getElementById('newCommentInput');
+      const msg = input.value.trim();
+      if (!msg || !currentActiveTicket) return;
+
+      const res = await apiRequest(`/api/tickets/${currentActiveTicket._id}/comments`, 'POST', { message: msg });
+      if (res.success) {
+        input.value = '';
+        await loadComments(currentActiveTicket._id);
+        showToast('Comment appended.');
+      } else {
+        showToast(res.message || 'Comment rejected', true);
+      }
+    }
+
+    async function executeAssignAgent() {
+      const agentId = document.getElementById('agentSelectDropdown').value;
+      if (!agentId || !currentActiveTicket) {
+        showToast('Please pick an agent first', true);
+        return;
+      }
+      const res = await apiRequest(`/api/tickets/${currentActiveTicket._id}/assign`, 'PUT', { agentId });
+      if (res.success) {
+        showToast(res.message);
+        await openTicketDetail(currentActiveTicket._id);
+        await loadAllData();
+      } else {
+        showToast(res.message || 'Assignment failed', true);
+      }
+    }
+
+    async function executeStatusUpdate(newStatus) {
+      if (!currentActiveTicket) return;
+      const res = await apiRequest(`/api/tickets/${currentActiveTicket._id}/status`, 'PUT', { status: newStatus });
+      if (res.success) {
+        showToast(`Ticket status updated to ${newStatus}`);
+        await openTicketDetail(currentActiveTicket._id);
+        await loadAllData();
+      } else {
+        showToast(res.message || 'Status update failed', true);
+      }
+    }
+
+    function openNewTicketModal() {
+      document.getElementById('newTicketTitle').value = '';
+      document.getElementById('newTicketDescription').value = '';
+      document.getElementById('newTicketError').classList.add('hidden');
+      document.getElementById('modalNewTicket').classList.remove('hidden');
+    }
+
+    function closeNewTicketModal() {
+      document.getElementById('modalNewTicket').classList.add('hidden');
+    }
+
+    function closeDetailModal() {
+      document.getElementById('modalTicketDetail').classList.add('hidden');
+      currentActiveTicket = null;
+    }
+
+    async function submitNewTicket(e) {
+      e.preventDefault();
+      const title = document.getElementById('newTicketTitle').value.trim();
+      const description = document.getElementById('newTicketDescription').value.trim();
+      const category = document.getElementById('newTicketCategory').value;
+      const priority = document.getElementById('newTicketPriority').value;
+      const errBox = document.getElementById('newTicketError');
+
+      if (!title || !description) {
+        errBox.innerText = 'Title and description are required.';
+        errBox.classList.remove('hidden');
+        return;
+      }
+
+      const res = await apiRequest('/api/tickets', 'POST', { title, description, category, priority });
+      if (res.success) {
+        closeNewTicketModal();
+        showToast('Ticket created successfully with status Open!');
+        await loadAllData();
+      } else {
+        errBox.innerText = res.message || 'Failed to create ticket.';
+        errBox.classList.remove('hidden');
+      }
+    }
+
+    function handleFilterChange() {
+      loadAllData();
+    }
+
+    function resetFilters() {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('filterStatus').value = '';
+      document.getElementById('filterPriority').value = '';
+      document.getElementById('filterCategory').value = '';
+      loadAllData();
+    }
+
+    function openAuthModal() {
+      document.getElementById('modalAuth').classList.remove('hidden');
+    }
+
+    function closeAuthModal() {
+      document.getElementById('modalAuth').classList.add('hidden');
+    }
+
+    async function handleCustomLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById('authEmail').value;
+      const password = document.getElementById('authPassword').value;
+      const err = document.getElementById('authError');
+
+      const res = await apiRequest('/api/auth/login', 'POST', { email, password });
+      if (res.success) {
+        currentToken = res.token;
+        currentUser = res.user;
+        localStorage.setItem('tf_token', res.token);
+        closeAuthModal();
+        updateUserUI();
+        await loadAllData();
+        showToast(`Signed in as ${currentUser.name}`);
+      } else {
+        err.innerText = res.message || 'Login failed';
+        err.classList.remove('hidden');
+      }
+    }
+
+    // Initialize application on load
+    window.addEventListener('DOMContentLoaded', () => {
+      switchRole('customer');
+    });
+  </script>
+</body>
+</html>

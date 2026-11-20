@@ -1,0 +1,190 @@
+{
+  "users": [
+    {
+      "_id": "70b6c0116349f5936a57e985",
+      "name": "Sarah Connor (Admin)",
+      "email": "admin@ticketflow.com",
+      "passwordHash": "pbkdf2$d0a14023504559340d479af786fd6dbe$72edad709491cde63a6df6b7c3aba8248c406874b89893927e7b205a65008ec59306efb228f38c15ccc8a2aa724bc4b7ba274c246f6c8fa65221b43e28a4d95f",
+      "role": "admin",
+      "createdAt": "2026-11-20T19:18:42.831Z"
+    },
+    {
+      "_id": "2404378d283ddf0520df36a1",
+      "name": "David Miller (Agent)",
+      "email": "agent@ticketflow.com",
+      "passwordHash": "pbkdf2$03edfcac9a8b5d15dbf767ca9a10e0a4$3b0af4e8c18f73bff98775517172371185d7e4664be4c920cfcca602e48d3fc9508e6c3ea007ac395abfe7c877758d782efa5492eff7fb27659d056aba003e96",
+      "role": "agent",
+      "createdAt": "2026-11-20T19:18:42.845Z"
+    },
+    {
+      "_id": "2632cddfe98c22975146b39b",
+      "name": "Elena Rostova (Agent)",
+      "email": "agent2@ticketflow.com",
+      "passwordHash": "pbkdf2$03edfcac9a8b5d15dbf767ca9a10e0a4$3b0af4e8c18f73bff98775517172371185d7e4664be4c920cfcca602e48d3fc9508e6c3ea007ac395abfe7c877758d782efa5492eff7fb27659d056aba003e96",
+      "role": "agent",
+      "createdAt": "2026-11-20T19:18:42.846Z"
+    },
+    {
+      "_id": "4e92770c3ee11776e7b4829a",
+      "name": "Alex Johnson (Customer)",
+      "email": "customer@ticketflow.com",
+      "passwordHash": "pbkdf2$2ee2f8df1f21d8e47bb320b6630839e1$4fc07437d2270a425a2c63abf48b6086e06f5cb880ba687fe53bdb2c76da2a06634edc8bc9a9635ffa7aed5c818e2a394ad3b35469c95d1db7ed617b3c3ea5bf",
+      "role": "customer",
+      "createdAt": "2026-11-20T19:18:42.846Z"
+    },
+    {
+      "_id": "0ba2544be99a5b3965fe097f",
+      "name": "Priya Sharma (Customer)",
+      "email": "customer2@ticketflow.com",
+      "passwordHash": "pbkdf2$2ee2f8df1f21d8e47bb320b6630839e1$4fc07437d2270a425a2c63abf48b6086e06f5cb880ba687fe53bdb2c76da2a06634edc8bc9a9635ffa7aed5c818e2a394ad3b35469c95d1db7ed617b3c3ea5bf",
+      "role": "customer",
+      "createdAt": "2026-11-20T19:18:42.846Z"
+    },
+    {
+      "_id": "4c95470e2799934b4fb006f5",
+      "name": "Test Customer User",
+      "email": "test_customer_1795202400915@example.com",
+      "passwordHash": "pbkdf2$ed76d82243c6087e403a02073fc24278$2f4db0a34a45589883df6884c6422765006652113065e8c3b6fd9c275fd4e84630eba1fc83d40715f1380cc73b0376d2d6ab00a7c63b7a6d5d913f9e18cf0838",
+      "role": "customer",
+      "createdAt": "2026-11-20T19:20:00.923Z"
+    },
+    {
+      "_id": "08bea355e1e7516627a31246",
+      "name": "Test Customer User",
+      "email": "test_customer_1795202624141@example.com",
+      "passwordHash": "pbkdf2$1c2fefc8def3553b0032ad3409fa91f8$d08fa951456d623507cdc03d7016b329c8d109db2e641784ab16a2a918ebe68513589ee668b57ad1119abd2194d9f10642b1492ef1f39ac675fdb16df6d84db4",
+      "role": "customer",
+      "createdAt": "2026-11-20T19:23:44.149Z"
+    }
+  ],
+  "tickets": [
+    {
+      "_id": "fa899011ca38b334bbaa614c",
+      "title": "Unable to access billing invoice PDF",
+      "description": "When I click \"Download Invoice\" for October, the page returns a 404 error.",
+      "category": "Billing",
+      "priority": "High",
+      "status": "Open",
+      "createdBy": "4e92770c3ee11776e7b4829a",
+      "assignedTo": null,
+      "createdAt": "2026-11-20T16:18:42.847Z",
+      "updatedAt": "2026-11-20T19:18:42.847Z",
+      "resolvedAt": null
+    },
+    {
+      "_id": "e7a4e49ef4b3c453fd9aac6e",
+      "title": "VPN connection dropping intermittently",
+      "description": "The internal enterprise VPN terminates connection every 15 minutes while accessing remote workstation.",
+      "category": "Technical",
+      "priority": "Urgent",
+      "status": "In Progress",
+      "createdBy": "4e92770c3ee11776e7b4829a",
+      "assignedTo": "2404378d283ddf0520df36a1",
+      "createdAt": "2026-11-20T13:18:42.847Z",
+      "updatedAt": "2026-11-20T19:18:42.847Z",
+      "resolvedAt": null
+    },
+    {
+      "_id": "763aa8909d9cd5de33c795db",
+      "title": "Request password reset for secondary company email",
+      "description": "Need secondary portal access configured with MFA reset token.",
+      "category": "Account",
+      "priority": "Medium",
+      "status": "Resolved",
+      "createdBy": "0ba2544be99a5b3965fe097f",
+      "assignedTo": "2404378d283ddf0520df36a1",
+      "createdAt": "2026-11-18T19:18:42.847Z",
+      "updatedAt": "2026-11-20T19:18:42.848Z",
+      "resolvedAt": "2026-11-19T19:18:42.847Z"
+    },
+    {
+      "_id": "56700f14df4ccc0a30b494a7",
+      "title": "Ergonomic dual-monitor stand arm request",
+      "description": "Display arm clamp mounting broke on desk 402B. Need replacement.",
+      "category": "Hardware",
+      "priority": "Low",
+      "status": "Resolved",
+      "createdBy": "0ba2544be99a5b3965fe097f",
+      "assignedTo": "2632cddfe98c22975146b39b",
+      "createdAt": "2026-11-17T19:18:42.847Z",
+      "updatedAt": "2026-11-20T19:18:42.848Z",
+      "resolvedAt": "2026-11-18T23:18:42.847Z"
+    },
+    {
+      "_id": "e1cf211d8ea4f50535b085bf",
+      "title": "Clarification regarding SLA guidelines for enterprise tier",
+      "description": "Could you provide the official SLA response matrix for tier-1 incidents?",
+      "category": "General",
+      "priority": "Medium",
+      "status": "Open",
+      "createdBy": "0ba2544be99a5b3965fe097f",
+      "assignedTo": null,
+      "createdAt": "2026-11-20T18:18:42.847Z",
+      "updatedAt": "2026-11-20T19:18:42.848Z",
+      "resolvedAt": null
+    },
+    {
+      "_id": "cca98888a50b2452fba4075b",
+      "title": "Printer connection failure in Room 102",
+      "description": "The laser printer gives an IP conflict error when printing queue fills up.",
+      "category": "Hardware",
+      "priority": "High",
+      "status": "Resolved",
+      "createdBy": "4e92770c3ee11776e7b4829a",
+      "assignedTo": "2404378d283ddf0520df36a1",
+      "createdAt": "2026-11-20T19:20:00.949Z",
+      "updatedAt": "2026-11-20T19:20:00.952Z",
+      "resolvedAt": "2026-11-20T19:20:00.952Z"
+    },
+    {
+      "_id": "4d1cec363110804a1f34f8de",
+      "title": "Printer connection failure in Room 102",
+      "description": "The laser printer gives an IP conflict error when printing queue fills up.",
+      "category": "Hardware",
+      "priority": "High",
+      "status": "Resolved",
+      "createdBy": "4e92770c3ee11776e7b4829a",
+      "assignedTo": "2404378d283ddf0520df36a1",
+      "createdAt": "2026-11-20T19:23:44.174Z",
+      "updatedAt": "2026-11-20T19:23:44.177Z",
+      "resolvedAt": "2026-11-20T19:23:44.177Z"
+    }
+  ],
+  "comments": [
+    {
+      "_id": "184c35a20ecd8f76ea54297e",
+      "ticketId": "e7a4e49ef4b3c453fd9aac6e",
+      "userId": "4e92770c3ee11776e7b4829a",
+      "message": "Any update on this? The VPN dropped again during a client call.",
+      "createdAt": "2026-11-20T15:18:42.847Z"
+    },
+    {
+      "_id": "dc8bc15dff7b42c7a2dfcc77",
+      "ticketId": "e7a4e49ef4b3c453fd9aac6e",
+      "userId": "2404378d283ddf0520df36a1",
+      "message": "Hello Alex, I reviewed the gateway logs and found an MTU mismatch on the tunnel. Pushing an updated configuration profile now.",
+      "createdAt": "2026-11-20T17:18:42.847Z"
+    },
+    {
+      "_id": "f61059ee8f7802da4a685334",
+      "ticketId": "763aa8909d9cd5de33c795db",
+      "userId": "2404378d283ddf0520df36a1",
+      "message": "MFA token reset completed. Secure link sent to registered phone number.",
+      "createdAt": "2026-11-19T19:18:42.847Z"
+    },
+    {
+      "_id": "a7789ccb5cc52a9299682f71",
+      "ticketId": "cca98888a50b2452fba4075b",
+      "userId": "4e92770c3ee11776e7b4829a",
+      "message": "Verified the fix, printing is functioning properly again. Thank you!",
+      "createdAt": "2026-11-20T19:20:00.958Z"
+    },
+    {
+      "_id": "c16ab4a5d2f148827179e60c",
+      "ticketId": "4d1cec363110804a1f34f8de",
+      "userId": "4e92770c3ee11776e7b4829a",
+      "message": "Verified the fix, printing is functioning properly again. Thank you!",
+      "createdAt": "2026-11-20T19:23:44.183Z"
+    }
+  ]
+}
