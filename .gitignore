@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Environment and Secrets (Never commit secrets to git!)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Local Embedded Database State
+server/data/
+data/
+
+# Build and Production outputs
+dist/
+build/
+.output/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.system_generated/
+
+# Editor & OS artifacts
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
